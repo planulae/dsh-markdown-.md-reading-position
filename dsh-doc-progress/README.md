@@ -12,42 +12,6 @@ DSH 的文档预览把滚动位置存在每个标签页自己的内存状态里�
 - 保存时同时记录最近的标题锚点；窗口宽度变化导致重排后，优先按标题校正位置。
 - 后台隐藏的会话不会在后台偷偷恢复或滚动；等它显示出来再恢复。
 
-## 安装状态
-
-本机已安装到 desktop profile：
-
-- 插件目录：`D:\dsh-doc-progress`
-- profile 链接：`C:\Users\liche\.dsh\profiles\desktop\node_modules\dsh-doc-progress`（junction）
-- profile `package.json` 的 `dsh.profile.bundles` 已包含 `dsh-doc-progress`
-
-修改 `package.json` 前已备份为 `package.json.bak-docprogress-<时间戳>`。
-
-## 验证
-
-已在本机 DSH 客户端里确认：
-
-1. 客户端启动后，渲染进程的 `localStorage` 中出现 `dsh.document-reading-progress.v1`，说明插件已加载。
-2. 打开一个长 Markdown 文件并滚动后，记录类似：
-
-   ```json
-   {
-     "file:d:/cs_dsh/_doc-progress-test.md": {
-       "top": 1400,
-       "ratio": 0.1269,
-       "height": 11770,
-       "viewport": 860,
-       "anchor": { "text": "第 6 节", "index": 6, "offset": 100 }
-     }
-   }
-   ```
-
-3. 切换到另一个会话再切回来，预览回到切换前的章节位置。
-
-另外有一套无头浏览器测试，覆盖持久化、重新挂载恢复、分页深位置恢复、隐藏后显示、绝对路径晚到、无记录不误跳：
-
-```powershell
-node D:\dsh-doc-progress\test\run.mjs
-```
 
 ## 配置
 
