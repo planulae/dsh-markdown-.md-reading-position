@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Markdown Reading Position",
+    "description": "Remembers each Markdown file's reading position in the sidebar preview and restores it after switching sessions or reopening the preview."
+  }
+}

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>dsh-doc-progress test</title>
+  <style>
+    html, body { margin: 0; height: 100%; }
+    #host { position: absolute; inset: 0; }
+    .preview { display: flex; flex-direction: column; height: 400px; }
+    .header { flex: none; height: 30px; }
+    .body { flex: 1; min-height: 0; overflow: auto; }
+    .spacer { width: 10px; }
+    .more { display: block; }
+  </style>
+</head>
+<body>
+  <div id="host"></div>
+  <pre id="results" hidden></pre>
+  <script>
+    window.__ModuleLoader__ = {
+      load(record) {
+        if (record.id !== "dsh-doc-progress") throw new Error("unexpected module id: " + record.id)
+        window.__PLUGIN__ = record.factory(() => {
+          throw new Error("the test plugin must not require other modules")
+        })
+      }
+    }
+  </script>
+  <script src="/plugin/client.js"></script>
+  <script src="/test/test.js"></script>
+</body>
+</html>

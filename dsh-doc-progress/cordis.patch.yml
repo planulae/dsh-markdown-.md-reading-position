@@ -1,0 +1,15 @@
+# dsh-doc-progress — profile bundle patch
+#
+# 这个 patch 把插件插入 DSH profile 的配置树。安装时把本包加入
+# profile package.json 的 dsh.profile.bundles（dsh plugin add 会自动做）。
+#
+# 可选配置（在 profile 的 cordis.patch.yml 里按 id 覆盖）：
+#   - id: dsh-doc-progress
+#     config:
+#       restoreDelayMs: 150
+#       maxRestoreMs: 15000
+#       maxDocs: 500
+
+- insert:
+    - id: dsh-doc-progress
+      name: dsh-doc-progress
