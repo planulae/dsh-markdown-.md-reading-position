@@ -101,32 +101,6 @@ node test/run.mjs
 
 测试会在本地启动一个临时 HTTP 服务和无头 Chrome/Edge，覆盖持久化、重新挂载恢复、分页深位置恢复、隐藏后显示、绝对路径晚到、无记录不误跳，以及“不保存标题文字”的隐私约束。可以用 `CHROME_PATH` 指定浏览器可执行文件。
 
-## 发布
-
-```bash
-npm publish
-```
-
-发布前建议：
-
-- 确认包名 `dsh-doc-progress` 在 npm 上可用；如果被占用，改成带 scope 的包名（例如 `@your-scope/dsh-doc-progress`），并同步修改 `cordis.patch.yml` 里的 `name` 和 profile 依赖。
-- 在 `package.json` 中补充 `repository`、`homepage` 等元数据。
-- `files` 白名单只发布 `lib`、`locale`、`cordis.patch.yml`、`README.md` 和 `LICENSE`，不包含测试目录。
-
-### 在 GitHub 发布
-
-GitHub 上需要上传的是**源码目录本身**，不是 npm 的 `.tgz`：
-
-- 上传 `package.json`、`README.md`、`LICENSE`、`.gitignore`、`cordis.patch.yml`、`lib/`、`locale/`、`test/`。
-- 不要上传 `node_modules/`、测试生成的浏览器 profile、`*.tgz`；这些都在 `.gitignore` 里。
-- 如果创建 GitHub Release，可以把 npm 生成的 `dsh-doc-progress-<version>.tgz` 作为 Release 附件上传，方便别人直接下载安装；它不是源码仓库的替代品。
-- 仓库根目录保留 `package.json` 和 `dsh.bundle.patch` 后，可以直接从 GitHub 安装：
-
-  ```bash
-  dsh plugin --profile <profile> add github:<user>/<repo>
-  ```
-
-- GitHub Packages 是另一套 npm registry：需要把包名改成 `@<user>/dsh-doc-progress`，并配置 `.npmrc` 指向 `https://npm.pkg.github.com`。如果只是分享插件，源码仓库 + Release 更简单。
 
 ## English
 
