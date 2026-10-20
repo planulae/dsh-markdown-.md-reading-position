@@ -157,20 +157,38 @@ window.__ModuleLoader__.load({
 			}
 		}
 
-		/** Read localStorage once per plugin activation. */
+		/** Remove heading text written by versions before the privacy change. */
+		function scrubLegacyAnchors(store) {
+			let changed = false;
+			for (const record of Object.values(store.docs)) {
+				if (record === null || typeof record !== "object") continue;
+				const anchor = record.anchor;
+				if (anchor === null || typeof anchor !== "object") continue;
+				if ("text" in anchor) {
+					delete anchor.text;
+					changed = true;
+				}
+				if ("title" in anchor) {
+					delete anchor.title;
+					changed = true;
+				}
+			}
+			return changed;
+		}
+
+		/** Read localStorage once per plugin activation and drop legacy content fields. */
 		function readStore() {
 			try {
-				return parseStore(window.localStorage.getItem(STORAGE_KEY)) ?? { version: 1, docs: {} };
+				const store = parseStore(window.localStorage.getItem(STORAGE_KEY)) ?? { version: 1, docs: {} };
+				if (scrubLegacyAnchors(store)) {
+					try {
+						window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+					} catch {}
+				}
+				return store;
 			} catch {
 				return { version: 1, docs: {} };
 			}
-		}
-
-		/** Collapse whitespace in heading text so re-renders compare equal. */
-		function normalizeWhitespace(value) {
-			return String(value === undefined || value === null ? "" : value)
-				.replace(/\s+/g, " ")
-				.trim();
 		}
 
 		/** The scrollable range of one preview body. */
@@ -186,7 +204,12 @@ window.__ModuleLoader__.load({
 			return rect.width > 0 && rect.height > 0;
 		}
 
-		/** The first block heading at or above the viewport's reading line. */
+		/**
+		 * The ordinal of the first block heading at or above the viewport's
+		 * reading line, plus its offset. Only the ordinal and offset are
+		 * persisted; the heading's text is document content and never leaves
+		 * the rendered DOM.
+		 */
 		function findAnchor(entry) {
 			const content = entry.content;
 			const body = entry.body;
@@ -203,38 +226,18 @@ window.__ModuleLoader__.load({
 			if (best < 0) return null;
 			const heading = headings[best];
 			return {
-				text: normalizeWhitespace(heading.textContent).slice(0, 200),
 				index: best,
 				offset: Math.round(readingLine - heading.getBoundingClientRect().top)
 			};
 		}
 
-		/** Find the same heading after a remount, tolerating small structural shifts. */
+		/** Find the heading at the saved ordinal after a remount. */
 		function findAnchorElement(content, anchor) {
 			if (content === null || anchor === null || typeof anchor !== "object") return null;
-			const wanted = normalizeWhitespace(anchor.text);
-			if (wanted === "") return null;
 			const headings = content.querySelectorAll("h1,h2,h3,h4,h5,h6");
 			if (headings.length === 0) return null;
-			const start = Math.round(clamp(Number(anchor.index), 0, headings.length - 1));
-			for (let distance = 0; distance < headings.length; distance += 1) {
-				if (distance === 0) {
-					if (sameHeading(headings[start], wanted)) return headings[start];
-					continue;
-				}
-				const right = start + distance;
-				if (right < headings.length && sameHeading(headings[right], wanted)) return headings[right];
-				const left = start - distance;
-				if (left >= 0 && sameHeading(headings[left], wanted)) return headings[left];
-			}
-			for (const heading of headings) {
-				if (sameHeading(heading, wanted)) return heading;
-			}
-			return null;
-		}
-
-		function sameHeading(heading, wanted) {
-			return normalizeWhitespace(heading.textContent) === wanted;
+			const index = Math.round(clamp(Number(anchor.index), 0, headings.length - 1));
+			return headings[index] ?? null;
 		}
 
 		/** Install the observer. */

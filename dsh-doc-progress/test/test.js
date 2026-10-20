@@ -138,16 +138,19 @@
     const first = mount({ height: 3000 });
     await sleep(120);
     const api = window.__DSH_DOC_PROGRESS__;
-    assert("debug api", api !== undefined, api === undefined ? "missing" : JSON.stringify(api.stats()));
-    assert("debug scrollable", first.body.scrollHeight - first.body.clientHeight > 1000, first.body.scrollHeight + "/" + first.body.clientHeight + " top=" + first.body.scrollTop + " rect=" + first.root.getBoundingClientRect().height);
+    assert("plugin active", api !== undefined, api === undefined ? "missing" : JSON.stringify(api.stats()));
     first.body.scrollTop = 1200;
     first.body.dispatchEvent(new Event("scroll"));
     await sleep(650);
-    assert("debug dump", true, JSON.stringify(api.dump()));
 
     const stored = JSON.parse(localStorage.getItem(KEY) || "{}");
     const record = stored.docs && stored.docs["file:d:/docs/test.md"];
     assert("scroll position is persisted", record && Math.abs(record.top - 1200) < 3, record && record.top);
+    assert(
+      "persisted anchor has no heading text",
+      record !== undefined && (record.anchor === null || !Object.prototype.hasOwnProperty.call(record.anchor, "text")),
+      record === undefined ? "missing" : JSON.stringify(record.anchor)
+    );
 
     first.remove();
     await sleep(120);
@@ -253,8 +256,28 @@
     await sleep(80);
   }
 
+  async function testLegacyAnchorScrub() {
+    reset();
+    seed({
+      "file:d:/docs/legacy.md": {
+        top: 100,
+        anchor: { text: "legacy heading text", title: "legacy heading text", index: 2, offset: 3 },
+        updatedAt: Date.now()
+      }
+    });
+    applyPlugin();
+    const stored = JSON.parse(localStorage.getItem(KEY) || "{}");
+    const anchor = stored.docs && stored.docs["file:d:/docs/legacy.md"] && stored.docs["file:d:/docs/legacy.md"].anchor;
+    assert(
+      "legacy heading text is scrubbed",
+      anchor !== undefined && anchor !== null && !("text" in anchor) && !("title" in anchor),
+      JSON.stringify(anchor)
+    );
+  }
+
   async function run() {
     try {
+      await testLegacyAnchorScrub();
       await testSimpleRestore();
       await testPagedRestore();
       await testHiddenRootDefersRestore();
